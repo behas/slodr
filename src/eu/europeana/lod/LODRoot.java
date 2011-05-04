@@ -21,10 +21,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
-	 * Servlet to show static files or redirect to central portal if the file does not exist.
 
-	 */
 	public class LODRoot extends BaseServlet {
 	
 	   
