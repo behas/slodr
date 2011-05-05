@@ -2,9 +2,19 @@ package eu.europeana.lod.servlets;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDFS;
+
 
 import de.fuberlin.wiwiss.pubby.Configuration;
-import de.fuberlin.wiwiss.pubby.servlets.BaseServlet;
+import de.fuberlin.wiwiss.pubby.MappedResource;
+import de.fuberlin.wiwiss.pubby.ModelResponse;
+import de.fuberlin.wiwiss.pubby.ModelTranslator;
+import de.fuberlin.wiwiss.pubby.ResourceDescription;
+import de.fuberlin.wiwiss.pubby.vocab.FOAF;
+import eu.europeana.lod.spaqrl.RDFdata;
+import eu.europeana.lod.spaqrl.RemoteSPARQLDataSource;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -25,8 +35,10 @@ import java.util.regex.Pattern;
 	
 	   
 	    private static final String LOD_PILOT_REL_URL = "/";
-	    
+	    private RemoteSPARQLDataSource sds= new RemoteSPARQLDataSource("http://sparql.mminf.univie.ac.at/","http://data.europeana.eu");
+	    private RDFdata rdfData = new RDFdata();
 	
+	    
 	    @Override
 	    public void init(ServletConfig config) throws ServletException {
 	    
@@ -40,17 +52,36 @@ import java.util.regex.Pattern;
 				throws IOException, ServletException  {
 	    	
 	    	//PrintWriter out = response.getWriter();
-
+	    	MappedResource resource = config.getMappedResourceFromRelativeWebURI(
+					relativeURI, false);
 	    	String hpHeaders=getHigherAcceptValues(request.getHeader("accept"));
 	    	if (hpHeaders==null)
 	    		return false;
 	    	
 	    	 if (matchRedirect(hpHeaders, Header.RDF, Header.APPLICATIONRDF, Header.N3, Header.TTL)) {
-		            
-		        	//out.println("redirect"+hpHeaders+" "+processUri(request.getRequestURI()));
-		        	redirectToPubby(relativeURI, config, request, response);
+	    		 	ModelTranslator model = new ModelTranslator(sds.getResourceDescription("http://data.europeana.eu/"+relativeURI), config);
+	    		 // Check if resource exists in dataset
+	    			if (model.getTranslated().size() == 0) {
+	    				response.setStatus(404);
+	    				response.setContentType("text/plain");
+	    				response.getOutputStream().println("Nothing known about <" + resource.getWebURI() + ">");
+	    				return true;
+	    			}
+	    			Model description= rdfData.get(model.getTranslated(), resource);
+	    			Resource document = description.getResource(addQueryString(resource.getDataURL(), request));
+	    			document.addProperty(FOAF.primaryTopic, getResourceDescription(resource).getResource(resource.getWebURI()));
+	    			document.addProperty(RDFS.label, 
+	    					"RDF description of " + 
+	    					new ResourceDescription(resource, description, config).getLabel());
+	    			resource.getDataset().addDocumentMetadata(description, document);
+	    			resource.getDataset().addMetadataFromTemplate(description, resource, getServletContext());
+	    			ModelResponse server = new ModelResponse(description, request, response);
+	    			server.serve();
+	    		 	//redirectToPubby(relativeURI, config, request, response);
 		        	return true ;
 		        }
+	  
+	    	 
 	        if (matchRedirect(hpHeaders, Header.HTML, Header.XHTML)) {
 	            
 	        	
@@ -59,6 +90,7 @@ import java.util.regex.Pattern;
 	        		return true;
 	        	}
 	        	if (!(processUri(request.getRequestURI()).trim()).equalsIgnoreCase("")){
+	        		response.setStatus(303);
 	        		redirectToEuropeana(processUri(request.getRequestURI()).trim(), response);
 	        	}
 	        	else
