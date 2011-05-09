@@ -1,5 +1,6 @@
 package eu.europeana.data;
 
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,9 +11,12 @@ import javax.servlet.http.HttpServletRequestWrapper;
  * This class encapsulates the data.europeana.eu URI design issues
  * 
  * @author haslhofer
+ * @author cesareconcordia
  * 
  */
 public class EuropeanaRequest extends HttpServletRequestWrapper {
+	
+	private String acceptHeader="";
 
 	public static final String EUROPEANA_DATA_BASE_URL = "http://data.europeana.eu";
 
@@ -29,11 +33,12 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 	public EuropeanaRequest(HttpServletRequest request) {
 		super(request);
+		acceptHeader=getAcceptValues();
 	}
 
 	public boolean isValidRequest() {
 		// TODO: run some basic regex test
-		return true;
+		return (!acceptHeader.equals(""));
 	}
 
 	public String getEuropeanaID() {
@@ -71,7 +76,8 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 * @return true if human-readable
 	 */
 	public boolean isDocumentRequest() {
-		return MimeTypePattern.matchMIMEType(getHeader("accept"), MimeTypePattern.HTML, MimeTypePattern.XHTML);
+		//return MimeTypePattern.matchMIMEType(getHeader("accept"), MimeTypePattern.HTML, MimeTypePattern.XHTML);
+		return MimeTypePattern.matchMIMEType(acceptHeader, MimeTypePattern.HTML);
 	}
 
 	/**
@@ -80,8 +86,10 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 * @return true if machine-readable
 	 */
 	public boolean isDataRequest() {
-		return MimeTypePattern.matchMIMEType(getHeader("accept"), MimeTypePattern.RDF,
-				MimeTypePattern.APPLICATIONRDF, MimeTypePattern.TTL, MimeTypePattern.N3);
+		//return MimeTypePattern.matchMIMEType(getHeader("accept"), MimeTypePattern.RDF,
+			//	MimeTypePattern.APPLICATIONRDF, MimeTypePattern.TTL, MimeTypePattern.N3);
+		return MimeTypePattern.matchMIMEType(acceptHeader, MimeTypePattern.RDF, MimeTypePattern.TTL, 
+				MimeTypePattern.N3);
 		
 	}
 	
@@ -134,12 +142,10 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 */
 	public enum MimeTypePattern {
 
-		RDF(".*rdf\\/xml.*"),
-		HTML(".*text\\/html.*"),
-		APPLICATIONRDF(".*application\\/rdf\\+xml.*"),
-		XHTML(".*application\\/xhtml.*"),
-		TTL(".*ttl.*"),
-		N3(".*n3.*");
+		RDF(".*rdf\\/xml.*|.*application\\/rdf\\+xml.*"),
+		HTML(".*text\\/html.*|.*application\\/xhtml\\+xml.*"),
+		TTL(".*ttl.*|.*text\\/turtle.*"),
+		N3(".*text\\/n3.*");
 
 		private String value;
 
@@ -166,6 +172,44 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 		
 		
 	}
+	
+	// returns the list of accept headers with the higher q value
+	
+	private String getAcceptValues(){
+		String acceptHeader=getHeader("accept");
+    	StringTokenizer st = new StringTokenizer(acceptHeader, ",");
+    	
+    	String headers="";
+    	Float candidate_priority=new Float(0);
+    	while (st.hasMoreTokens()){
+    		StringTokenizer value= new StringTokenizer(st.nextToken(), ";");
+    		if (value.countTokens()==1){
+    			candidate_priority=new Float(1);
+    			headers+=" "+value.nextToken()+" ";
+    		}
+    		else{
+    			String temp="";
+    			if (value.countTokens()>1){
+    				temp=value.nextToken();
+    				String temppr=value.nextToken();
+    				if (temppr.startsWith("q=")){
+    					Float pr_num= new Float(temppr.substring(2).trim());
+    					if (candidate_priority.compareTo(pr_num)<0){
+    						candidate_priority = pr_num;
+    						headers=" ";
+    						headers+=value.nextToken()+" ";
+    					}
+    					if (candidate_priority.compareTo(pr_num)==0){
+    						candidate_priority = pr_num;
+    						headers+=value.nextToken()+" ";
+    					}
+    				}
+    			}
+    		}
+    		
+    	}
+    	return headers.trim();
+    }
 
 	
 	
