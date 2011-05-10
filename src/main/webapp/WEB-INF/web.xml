@@ -7,13 +7,13 @@
 
 	<servlet>
 		<servlet-name>ConnegServlet</servlet-name>
-		<servlet-class>eu.europeana.data.ConnegServlet</servlet-class>
+		<servlet-class>eu.europeana.lod.data.ConnegServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	
 	<servlet>
 		<servlet-name>DataServlet</servlet-name>
-		<servlet-class>eu.europeana.data.DataServlet</servlet-class>
+		<servlet-class>eu.europeana.lod.data.DataServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
  
@@ -40,6 +40,11 @@
 	<servlet-mapping>
     	<servlet-name>DataServlet</servlet-name>
     	<url-pattern>/data/*</url-pattern>
+  	</servlet-mapping>
+  	
+  	<servlet-mapping>
+    	<servlet-name>ConnegServlet</servlet-name>
+    	<url-pattern>/*</url-pattern>
   	</servlet-mapping>
 
 
