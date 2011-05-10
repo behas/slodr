@@ -39,7 +39,8 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 	public boolean isValidRequest() {
 		// TODO: run some basic regex test
-		return (!acceptHeader.equals(""));
+		//return (!acceptHeader.equals(""));
+		return true;
 	}
 
 	public String getEuropeanaID() {
@@ -129,7 +130,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	public String getHTMLInformationResource() {
 		
 		if (getEuropeanaID().equalsIgnoreCase(EUROPEANA_DATA_BASE_HOME_PAGE_URL))
-			return "http://data.europeana.eu/index.html";
+			return "http://version1.europeana.eu/web/lod/";
 		
 		return "http://www.europeana.eu/portal/record/" + getEuropeanaID() + ".html";
 	}
@@ -185,10 +186,14 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	// returns the list of accept headers with the higher q value
 	
 	private String getAcceptValues(){
+		String headers="";
 		String acceptHeader=getHeader("accept");
+		
+		if ((acceptHeader==null) || acceptHeader.trim().equals(""))
+			return headers;
     	StringTokenizer st = new StringTokenizer(acceptHeader, ",");
     	
-    	String headers="";
+    	
     	Float candidate_priority=new Float(0);
     	while (st.hasMoreTokens()){
     		StringTokenizer value= new StringTokenizer(st.nextToken(), ";");
