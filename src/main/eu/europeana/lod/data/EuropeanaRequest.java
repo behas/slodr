@@ -190,7 +190,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 		String acceptHeader=getHeader("accept");
 		
 		if ((acceptHeader==null) || acceptHeader.trim().equals(""))
-			return headers;
+			acceptHeader="text/html";
     	StringTokenizer st = new StringTokenizer(acceptHeader, ",");
     	
     	
