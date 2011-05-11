@@ -12,11 +12,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.velocity.context.Context;
 
 /**
- * This servlet handles the 
+ * This servlet redirects document (HTML) requests to the Europeana Portal and
+ * data (RDF) request to the corresponding information resource URI
  * 
  * @author haslhofer
  * @author cesareconcordia
- *
+ * 
  */
 public class ConnegServlet extends HttpServlet {
 
@@ -27,9 +28,6 @@ public class ConnegServlet extends HttpServlet {
 	// http://localhost:8080/aggregation/europeana/00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154
 
 	// TODO: handle externally in web.xml
-
-	
-
 
 	public void init() {
 
@@ -44,7 +42,8 @@ public class ConnegServlet extends HttpServlet {
 		// check if the request is valid at all
 		if (!request.isValidRequest()) {
 			// TODO: HTML messages should be put on template files
-			send404(resp, req.getRequestURI(), "This is not a valid request!");
+			send404(resp, req.getRequestURI(),
+					"Unknown resource " + request.getRequestURI());
 			return;
 		}
 
@@ -54,15 +53,14 @@ public class ConnegServlet extends HttpServlet {
 		// if we cannot parse it -> no need to continue
 		if (europeanaID == null) {
 			// TODO: HTML messages should be put on template files
-			send404(resp, req.getRequestURI(), "The Europeana ID is null!");
+			send404(resp, req.getRequestURI(),
+					"Cannot parse Europeana ID from the resource URI "
+							+ request.getRequestURI());
 			return;
 		}
 
-		
 		if (request.isDocumentRequest()) {
 
-			System.out.println("Received Document Request");
-			
 			String targetURI = request.getHTMLInformationResource();
 			resp.setStatus(303);
 			resp.setContentType(request.getHeader("accept"));
@@ -70,21 +68,22 @@ public class ConnegServlet extends HttpServlet {
 
 		} else if (request.isDataRequest()) {
 
-			System.out.println("Received Data Request");
-			
 			String targetURI = request.getRDFInformationResource();
 			resp.setStatus(303);
 			resp.setContentType(request.getHeader("accept"));
 			resp.addHeader("Location", targetURI);
-			
-			
+
 		} else {
 			// TODO: HTML messages should be put on template files
-			send404(resp, req.getRequestURI(), "The requested resource does not exist on this server, or no information about it is available.");
+			send404(resp,
+					req.getRequestURI(),
+					"The requested resource does not exist on this server, or no information about it is available.");
 		}
 
 	}
-	protected void send404(HttpServletResponse resp, String resourceURI, String msg) throws IOException {
+
+	protected void send404(HttpServletResponse resp, String resourceURI,
+			String msg) throws IOException {
 		resp.setStatus(404);
 		VelocityHelper template = new VelocityHelper(getServletContext(), resp);
 		Context context = template.getVelocityContext();
