@@ -109,11 +109,12 @@ public class DataServlet extends HttpServlet {
 			return new TurtleWriter();
 		}*/
 		
-		if (mediaType.indexOf("x-turtle")>0) {
+		if (mediaType.indexOf("turtle")>0) {
 			return new TurtleWriter();
 		}
-		if (mediaType.indexOf("rdf+n3")>0) {
-			return new TurtleWriter();
+		if (mediaType.indexOf("n3")>0) {
+			//return new N3Writer();
+			return new NTriplesWriter();
 		}
 		return new NTriplesWriter();
 	}
@@ -133,6 +134,8 @@ public class DataServlet extends HttpServlet {
 			model.getWriter("TURTLE").write(model, response.getOutputStream(), null);
 		}
 	}
+	
+	
 
 	private class RDFXMLWriter implements ModelWriter {
 		public void write(Model model, HttpServletResponse response) throws IOException {
