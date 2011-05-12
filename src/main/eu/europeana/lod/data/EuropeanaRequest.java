@@ -154,8 +154,8 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 		RDF(".*rdf\\/xml.*|.*application\\/rdf\\+xml.*"),
 		HTML(".*text\\/html.*|.*application\\/xhtml\\+xml.*"),
-		TTL(".*ttl.*|.*text\\/turtle.*"),
-		N3(".*text\\/n3.*");
+		TTL(".*ttl.*|.*text\\/turtle.*|.*application\\/x\\-turtle.*|.*application\\/turtle.*"),
+		N3(".*text\\/n3.*|.*text\\/rdf\\+n3.*");
 
 		private String value;
 
