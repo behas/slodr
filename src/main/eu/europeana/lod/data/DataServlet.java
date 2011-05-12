@@ -38,7 +38,7 @@ public class DataServlet extends HttpServlet {
 		
 		// Wrap request
 		EuropeanaRequest request = new EuropeanaRequest(req);
-				
+		
 		// Retrieve the non-information resource URI
 		String nirURI = request.getNonInformationResourceURI();
 		
@@ -77,12 +77,16 @@ public class DataServlet extends HttpServlet {
 		Random rand = new Random();
 		
 		String sparqlEndpoint = SPARQL_ENDPOINTS[rand.nextInt(SPARQL_ENDPOINTS.length)]; 
+
+		System.out.println("Executing " + query + " at " + sparqlEndpoint);
 		
 		
 		QueryEngineHTTP endpoint = new QueryEngineHTTP(sparqlEndpoint, query);
 		
 		Model result = endpoint.execDescribe();
-				
+		
+		result.write(System.out, "RDF/XML");
+		
 		
 		return result;
 	}
@@ -92,13 +96,23 @@ public class DataServlet extends HttpServlet {
 	// taken from Pubby
 	
 	private ModelWriter getWriter(String mediaType) {
-		if ("application/rdf+xml".equals(mediaType)) {
+		//if ("application/rdf+xml".equals(mediaType)) {
+		//	return new RDFXMLWriter();
+		//}
+		if (mediaType.indexOf("rdf+xml")>0) {
 			return new RDFXMLWriter();
 		}
-		if ("application/x-turtle".equals(mediaType)) {
+		/*if ("application/x-turtle".equals(mediaType)) {
 			return new TurtleWriter();
 		}
 		if ("text/rdf+n3;charset=utf-8".equals(mediaType)) {
+			return new TurtleWriter();
+		}*/
+		
+		if (mediaType.indexOf("x-turtle")>0) {
+			return new TurtleWriter();
+		}
+		if (mediaType.indexOf("rdf+n3")>0) {
 			return new TurtleWriter();
 		}
 		return new NTriplesWriter();
@@ -122,7 +136,7 @@ public class DataServlet extends HttpServlet {
 
 	private class RDFXMLWriter implements ModelWriter {
 		public void write(Model model, HttpServletResponse response) throws IOException {
-			RDFWriter writer = model.getWriter("RDF/XML");
+			RDFWriter writer = model.getWriter("RDF/XML-ABBREV");
 			writer.setProperty("showXmlDeclaration", "true");
 			writer.setProperty("blockRules", "propertyAttr");
 			writer.write(model, 
