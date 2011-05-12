@@ -154,7 +154,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 		RDF(".*rdf\\/xml.*|.*application\\/rdf\\+xml.*"),
 		HTML(".*text\\/html.*|.*application\\/xhtml\\+xml.*"),
-		TTL(".*ttl.*|.*text\\/turtle.*|.*application\\/x\\-turtle.*|.*application\\/turtle.*"),
+		TTL(".*ttl.*|.*text\\/turtle.*|.*application\\/x\\-turtle.*|.*application\\/turtle.*|.*text\\/rdf\\+turtle.*"),
 		N3(".*text\\/n3.*|.*text\\/rdf\\+n3.*");
 
 		private String value;
@@ -206,16 +206,19 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
     			if (value.countTokens()>1){
     				temp=value.nextToken();
     				String temppr=value.nextToken();
+    				temppr=temppr.trim();
     				if (temppr.startsWith("q=")){
     					Float pr_num= new Float(temppr.substring(2).trim());
     					if (candidate_priority.compareTo(pr_num)<0){
     						candidate_priority = pr_num;
     						headers=" ";
-    						headers+=value.nextToken()+" ";
+    						//headers+=value.nextToken()+" ";
+    						headers+=temp+" ";
     					}
     					if (candidate_priority.compareTo(pr_num)==0){
     						candidate_priority = pr_num;
-    						headers+=value.nextToken()+" ";
+    						//headers+=value.nextToken()+" ";
+    						headers+=temp+" ";
     					}
     				}
     			}
