@@ -38,7 +38,7 @@ public class DataServlet extends HttpServlet {
 		
 		// Wrap request
 		EuropeanaRequest request = new EuropeanaRequest(req);
-		
+				
 		// Retrieve the non-information resource URI
 		String nirURI = request.getNonInformationResourceURI();
 		
@@ -48,7 +48,7 @@ public class DataServlet extends HttpServlet {
 			
 			resp.addHeader("Vary", "Accept");
 			
-			resp.setContentType(request.getHeader("accept"));
+			resp.setContentType(request.getHeader("accept") + "; charset=UTF-8");
 			getWriter(request.getHeader("accept").toLowerCase()).write(model, resp);
 			resp.getOutputStream().flush();
 			
@@ -77,16 +77,12 @@ public class DataServlet extends HttpServlet {
 		Random rand = new Random();
 		
 		String sparqlEndpoint = SPARQL_ENDPOINTS[rand.nextInt(SPARQL_ENDPOINTS.length)]; 
-
-		System.out.println("Executing " + query + " at " + sparqlEndpoint);
 		
 		
 		QueryEngineHTTP endpoint = new QueryEngineHTTP(sparqlEndpoint, query);
 		
 		Model result = endpoint.execDescribe();
-		
-		result.write(System.out, "RDF/XML");
-		
+				
 		
 		return result;
 	}
@@ -126,7 +122,7 @@ public class DataServlet extends HttpServlet {
 
 	private class RDFXMLWriter implements ModelWriter {
 		public void write(Model model, HttpServletResponse response) throws IOException {
-			RDFWriter writer = model.getWriter("RDF/XML-ABBREV");
+			RDFWriter writer = model.getWriter("RDF/XML");
 			writer.setProperty("showXmlDeclaration", "true");
 			writer.setProperty("blockRules", "propertyAttr");
 			writer.write(model, 
