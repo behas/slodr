@@ -7,6 +7,9 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import eu.europeana.lod.util.AcceptHeader;
+
+
 /**
  * This class encapsulates the data.europeana.eu URI design issues
  * 
@@ -34,7 +37,12 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 	public EuropeanaRequest(HttpServletRequest request) {
 		super(request);
-		acceptHeader=getAcceptValues();
+		if (getHeader("accept")!=null && !getHeader("accept").trim().equalsIgnoreCase(""))
+			acceptHeader=new AcceptHeader(getHeader("accept").toLowerCase()).getValues();
+		else
+			acceptHeader="text/html";
+		
+		
 	}
 
 	public boolean isValidRequest() {
@@ -152,10 +160,10 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 */
 	public enum MimeTypePattern {
 
-		RDF(".*rdf\\/xml.*|.*application\\/rdf\\+xml.*"),
+		RDF(".*rdf.*|.*rdf\\/xml.*|.*application\\/rdf\\+xml.*"),
 		HTML(".*text\\/html.*|.*application\\/xhtml\\+xml.*"),
 		TTL(".*ttl.*|.*text\\/turtle.*|.*application\\/x\\-turtle.*|.*application\\/turtle.*|.*text\\/rdf\\+turtle.*"),
-		N3(".*text\\/n3.*|.*text\\/rdf\\+n3.*");
+		N3(".*n3.*|.*text\\/n3.*|.*text\\/rdf\\+n3.*");
 
 		private String value;
 
@@ -184,7 +192,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	}
 	
 	// returns the list of accept headers with the higher q value
-	
+/*	
 	private String getAcceptValues(){
 		String headers="";
 		String acceptHeader=getHeader("accept");
@@ -226,7 +234,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
     		
     	}
     	return headers.trim();
-    }
+    }*/
 
 	
 	
