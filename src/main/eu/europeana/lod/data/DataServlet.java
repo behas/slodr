@@ -13,11 +13,15 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFWriter;
 import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
+import eu.europeana.lod.data.EuropeanaRequest.MimeTypePattern;
+import eu.europeana.lod.util.AcceptHeader;
+
 /**
  * 
  * This servlet handles all RDF IR requests and is responsible for returning RDF data.s
  * 
  * @author haslhofer
+ * @author cesareconcordia
  *
  */
 public class DataServlet extends HttpServlet {
@@ -29,6 +33,7 @@ public class DataServlet extends HttpServlet {
 	
 	
 	public void init() {
+		
 
 	}
 
@@ -44,12 +49,17 @@ public class DataServlet extends HttpServlet {
 		
 		Model model = retrieveModel(nirURI);
 		
+		
 		if (! model.isEmpty()) {
 			
 			resp.addHeader("Vary", "Accept");
 			
 			resp.setContentType(request.getHeader("accept") + "; charset=UTF-8");
-			getWriter(request.getHeader("accept").toLowerCase()).write(model, resp);
+			//getWriter(request.getHeader("accept").toLowerCase()).write(model, resp);
+			String acceptHeader="rdf\\/xml";
+			if (request.getHeader("accept")!=null && !request.getHeader("accept").trim().equalsIgnoreCase(""))
+				acceptHeader=new AcceptHeader(request.getHeader("accept").toLowerCase()).getValues();
+			getWriter(acceptHeader).write(model, resp);
 			resp.getOutputStream().flush();
 			
 			
@@ -96,26 +106,26 @@ public class DataServlet extends HttpServlet {
 	// taken from Pubby
 	
 	private ModelWriter getWriter(String mediaType) {
-		//if ("application/rdf+xml".equals(mediaType)) {
-		//	return new RDFXMLWriter();
-		//}
-		if (mediaType.indexOf("rdf+xml")>0) {
+		/*if (mediaType.indexOf("rdf+xml")>0) {
 			return new RDFXMLWriter();
 		}
-		/*if ("application/x-turtle".equals(mediaType)) {
-			return new TurtleWriter();
-		}
-		if ("text/rdf+n3;charset=utf-8".equals(mediaType)) {
-			return new TurtleWriter();
-		}*/
-		
+		 
 		if (mediaType.indexOf("turtle")>0) {
 			return new TurtleWriter();
 		}
 		if (mediaType.indexOf("n3")>0) {
 			//return new N3Writer();
 			return new NTriplesWriter();
-		}
+		}*/
+		
+		
+		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.RDF))
+			return new RDFXMLWriter();
+		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.TTL))
+			return new TurtleWriter();
+		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.N3))
+			return new NTriplesWriter();
+			
 		return new NTriplesWriter();
 	}
 	
