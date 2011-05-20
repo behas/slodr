@@ -1,6 +1,5 @@
 package eu.europeana.lod.data;
 
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

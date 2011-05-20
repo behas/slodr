@@ -20,21 +20,6 @@ import org.apache.velocity.context.Context;
  */
 public class ConnegServlet extends HttpServlet {
 
-	// just some sample resources for testing
-	// sample rm:
-	// http://localhost:8080/rm/europeana/00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154
-	// sample agg:
-	// http://localhost:8080/aggregation/europeana/00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154
-
-	// TODO: handle externally in web.xml
-
-	
-
-
-	public void init() {
-
-		
-	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -66,8 +51,6 @@ public class ConnegServlet extends HttpServlet {
 		
 		if (request.isDocumentRequest()) {
 
-			System.out.println("Received Document Request");
-			
 			String targetURI = request.getHTMLInformationResource();
 			resp.setStatus(303);
 			resp.setContentType(request.getHeader("accept"));
@@ -75,8 +58,6 @@ public class ConnegServlet extends HttpServlet {
 
 		} else if (request.isDataRequest()) {
 
-			System.out.println("Received Data Request");
-			
 			String targetURI = request.getRDFInformationResource();
 			resp.setStatus(303);
 			resp.setContentType(request.getHeader("accept"));
