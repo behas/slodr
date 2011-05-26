@@ -2,7 +2,6 @@ package eu.europeana.lod.data;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.Random;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,65 +13,56 @@ import com.hp.hpl.jena.rdf.model.RDFWriter;
 import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
 import eu.europeana.lod.data.EuropeanaRequest.MimeTypePattern;
-import eu.europeana.lod.util.AcceptHeader;
 
 /**
  * 
- * This servlet handles all RDF IR requests and is responsible for returning RDF data.s
+ * This servlet handles all RDF IR requests and is responsible for returning RDF
+ * data.s
  * 
  * @author haslhofer
  * @author cesareconcordia
- *
+ * 
  */
 public class DataServlet extends HttpServlet {
 
-	// TODO: handle externally in web.xml
-	public static final String[] SPARQL_ENDPOINTS = {
-			//"http://sparql.mminf.univie.ac.at",
-			"http://data.mminf.univie.ac.at/sparql" };
-	
-	
+	private static String SPARQL_ENDPOINT = "http://data.mminf.univie.ac.at/sparql";
+
 	public void init() {
-		
 
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		
+
 		// Wrap request
 		EuropeanaRequest request = new EuropeanaRequest(req);
-		
+
 		// Retrieve the non-information resource URI
 		String nirURI = request.getNonInformationResourceURI();
-		
+
+		// Retrieve the model
 		Model model = retrieveModel(nirURI);
-		
-		
-		if (! model.isEmpty()) {
-			
+
+		if (!model.isEmpty()) {
+
 			resp.addHeader("Vary", "Accept");
-			
-			resp.setContentType(request.getHeader("accept") + "; charset=UTF-8");
-			//getWriter(request.getHeader("accept").toLowerCase()).write(model, resp);
-			String acceptHeader="rdf\\/xml";
-			if (request.getHeader("accept")!=null && !request.getHeader("accept").trim().equalsIgnoreCase(""))
-				acceptHeader=new AcceptHeader(request.getHeader("accept").toLowerCase()).getValues();
-			getWriter(acceptHeader).write(model, resp);
+
+			String requestedMimeType = request.getPreferredAcceptMimeType();
+
+			resp.setContentType(requestedMimeType + "; charset=UTF-8");
+
+			getWriter(requestedMimeType).write(model, resp);
+
 			resp.getOutputStream().flush();
-			
-			
+
 		} else {
-			
+
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}
 
-		
-		
 	}
 
-	
 	/**
 	 * Fetches the model from a remote SPARQL endpoint
 	 * 
@@ -80,89 +70,71 @@ public class DataServlet extends HttpServlet {
 	 * @return
 	 */
 	private Model retrieveModel(String resourceURI) {
-		
-		String query = "DESCRIBE <" + resourceURI + ">";
-		
-		//TODO: improve SPARQL load balancing
-		Random rand = new Random();
-		
-		String sparqlEndpoint = SPARQL_ENDPOINTS[rand.nextInt(SPARQL_ENDPOINTS.length)]; 
 
-		System.out.println("Executing " + query + " at " + sparqlEndpoint);
-		
-		
-		QueryEngineHTTP endpoint = new QueryEngineHTTP(sparqlEndpoint, query);
-		
+		String query = "DESCRIBE <" + resourceURI + ">";
+
+		QueryEngineHTTP endpoint = new QueryEngineHTTP(SPARQL_ENDPOINT, query);
+
 		Model result = endpoint.execDescribe();
-		
-		result.write(System.out, "RDF/XML");
-		
-		
+
 		return result;
 	}
 
-	
-	
-	// taken from Pubby
-	
+	/*
+	 * The following code parts are taken from pubby
+	 * 
+	 * https://github.com/cygri/pubby/
+	 */
+
 	private ModelWriter getWriter(String mediaType) {
-		/*if (mediaType.indexOf("rdf+xml")>0) {
-			return new RDFXMLWriter();
-		}
-		 
-		if (mediaType.indexOf("turtle")>0) {
-			return new TurtleWriter();
-		}
-		if (mediaType.indexOf("n3")>0) {
-			//return new N3Writer();
-			return new NTriplesWriter();
-		}*/
-		
-		
+
 		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.RDF))
 			return new RDFXMLWriter();
 		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.TTL))
 			return new TurtleWriter();
 		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.N3))
 			return new NTriplesWriter();
-			
+
 		return new NTriplesWriter();
 	}
-	
+
 	private interface ModelWriter {
-		void write(Model model, HttpServletResponse response) throws IOException;
+		void write(Model model, HttpServletResponse response)
+				throws IOException;
 	}
-	
+
 	private class NTriplesWriter implements ModelWriter {
-		public void write(Model model, HttpServletResponse response) throws IOException {
-			model.getWriter("N-TRIPLES").write(model, response.getOutputStream(), null);
+		public void write(Model model, HttpServletResponse response)
+				throws IOException {
+			model.getWriter("N-TRIPLES").write(model,
+					response.getOutputStream(), null);
 		}
 	}
-	
+
 	private class TurtleWriter implements ModelWriter {
-		public void write(Model model, HttpServletResponse response) throws IOException {
-			model.getWriter("TURTLE").write(model, response.getOutputStream(), null);
+		public void write(Model model, HttpServletResponse response)
+				throws IOException {
+			model.getWriter("TURTLE").write(model, response.getOutputStream(),
+					null);
 		}
 	}
-	
-	
 
 	private class RDFXMLWriter implements ModelWriter {
-		public void write(Model model, HttpServletResponse response) throws IOException {
+		public void write(Model model, HttpServletResponse response)
+				throws IOException {
 			RDFWriter writer = model.getWriter("RDF/XML-ABBREV");
 			writer.setProperty("showXmlDeclaration", "true");
 			writer.setProperty("blockRules", "propertyAttr");
-			writer.write(model, 
-					new OutputStreamWriter(response.getOutputStream(), "utf-8"), null);
+			writer.write(
+					model,
+					new OutputStreamWriter(response.getOutputStream(), "utf-8"),
+					null);
 		}
 	}
-	
-	
+
 	/**
-	 * autogenerated serial id 
+	 * autogenerated serial id
 	 */
 	private static final long serialVersionUID = -4443987723427113923L;
 
-	
-	
 }

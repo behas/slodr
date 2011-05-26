@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
 	version="2.4">
 
-	<display-name>data.europeana.eu request handler</display-name>
+	<display-name>Europeana Linked Data Pilot Servlet</display-name>
 
 	<servlet>
 		<servlet-name>ConnegServlet</servlet-name>
@@ -19,38 +19,8 @@
  
 	<servlet-mapping>
     	<servlet-name>ConnegServlet</servlet-name>
-    	<url-pattern>/rm/*</url-pattern>
-  	</servlet-mapping>
- 
-	<servlet-mapping>
-    	<servlet-name>ConnegServlet</servlet-name>
-    	<url-pattern>/aggregation/*</url-pattern>
-  	</servlet-mapping>
-
-	<servlet-mapping>
-    	<servlet-name>ConnegServlet</servlet-name>
-    	<url-pattern>/proxy/*</url-pattern>
-  	</servlet-mapping>
-
-	<servlet-mapping>
-    	<servlet-name>ConnegServlet</servlet-name>
-    	<url-pattern>/item/*</url-pattern>
-  	</servlet-mapping>
-
-	<!--  <servlet-mapping>
-    	<servlet-name>DataServlet</servlet-name>
-    	<url-pattern>/data/*</url-pattern>
-  	</servlet-mapping>-->
-  	
-  	<servlet-mapping>
-    	<servlet-name>ConnegServlet</servlet-name>
-    	<url-pattern>/data/*</url-pattern>
-  	</servlet-mapping>
-  	
-  	<servlet-mapping>
-    	<servlet-name>ConnegServlet</servlet-name>
     	<url-pattern>/*</url-pattern>
   	</servlet-mapping>
-
+ 
 
 </web-app>
