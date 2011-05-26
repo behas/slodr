@@ -159,6 +159,13 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 			return value;
 		}
 		
+		/**
+		 * Returns whether a given String matches a given (list of) mime-type patterns
+		 * 
+		 * @param acceptHeader
+		 * @param mimeTypes
+		 * @return
+		 */
 		public static boolean matchMIMEType(String acceptHeader, MimeTypePattern... mimeTypes) {
 			for (MimeTypePattern mimeType : mimeTypes) {
 				Pattern pattern = Pattern.compile(mimeType.getValue());
@@ -171,6 +178,28 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 			return false;
 		}
 
+		
+		/**
+		 * Returns the first matching mime-type pattern for a given accept header string.
+		 * 
+		 * Returns null, if there is no matching pattern
+		 * 
+		 * @param acceptHeader
+		 * @return
+		 */
+		public static MimeTypePattern getMatchingMimeType(String acceptHeader) {
+		
+			for(MimeTypePattern pattern: values()) {
+				
+				if (matchMIMEType(acceptHeader, pattern)) {
+					return pattern;
+				}
+				
+			}
+			
+			return null;
+		}
+		
 		
 		
 	}

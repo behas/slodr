@@ -51,6 +51,38 @@ public class EuropeanaLODServletTest {
 	/* The following test-cases reflect real-world requests and responses */
 
 	/**
+	 * Bug report Antoine 26.05 / URI serialization problem in RDF/XML output
+	 */
+	@Test
+	public void dataRequstEncodingProblemTest() throws Exception {
+
+		// http://data.europeana.eu/aggregation/europeana/92037/25F9104787668C4B5148BE8E5AB8DBEF5BE5FE03
+
+		ResourceType resourceType = ResourceType.AGGREGATION_EUROPEANA;
+		String itemID = "92037/25F9104787668C4B5148BE8E5AB8DBEF5BE5FE03";
+		String acceptHeader = "application/rdf+xml";
+
+		executeIRDataRequest(resourceType, itemID, acceptHeader);
+
+	}
+
+	/**
+	 * Bug report Antoine 24.05 / qValue problem
+	 */
+	@Test
+	public void simpleQValueTest() throws Exception {
+
+		// http://data.europeana.eu/rm/europeana/00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154
+
+		ResourceType resourceType = ResourceType.RM;
+		String itemID = "00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154";
+		String acceptHeader = "application/rdf+xml; q=0.8, text/html; q=0.2";
+
+		executeNIRDataRequest(resourceType, itemID, acceptHeader);
+
+	}
+
+	/**
 	 * A simple demo test
 	 */
 	@Test
@@ -71,33 +103,10 @@ public class EuropeanaLODServletTest {
 		assertEquals(expected_response, response);
 
 	}
-	
-	/**
-	 * Antoine's q-value problem
-	 */
-	@Test
-	public void simpleQValueTest() throws Exception {
 
-		EuropeanaTestRequest request = new EuropeanaTestRequest();
-		request.setHTTPRequestURI("http://data.europeana.eu/rm/europeana/00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154");
-		request.setAccept("application/rdf+xml; q=0.8, text/html; q=0.2");
-
-		EuropeanaTestResponse expected_response = new EuropeanaTestResponse();
-		expected_response.setStatus(303);
-		expected_response.setContentType("application/rdf+xml");
-		expected_response
-				.setLocation("http://data.europeana.eu/data/rm/europeana/00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154");
-
-		EuropeanaTestResponse response = tester.getEuropeanaResponse(request);
-
-		assertEquals(expected_response, response);
-
-	}
-
-	
 	@Test
 	public void testRootDocumentRequest() throws Exception {
-		
+
 		EuropeanaTestRequest request = new EuropeanaTestRequest();
 		request.setHTTPRequestURI("http://data.europeana.eu/");
 		request.setAccept("text/html");
@@ -110,17 +119,15 @@ public class EuropeanaLODServletTest {
 		EuropeanaTestResponse response = tester.getEuropeanaResponse(request);
 
 		assertEquals(expected_response, response);
-		
+
 	}
-	
 
 	@Test
 	public void testRootDataRequest() throws Exception {
-		
+
 		EuropeanaTestRequest request = new EuropeanaTestRequest();
 		request.setHTTPRequestURI("http://data.europeana.eu/");
 		request.setAccept("application/rdf+xml");
-
 
 		// TODO: change as soon as void is implemented
 
@@ -131,12 +138,9 @@ public class EuropeanaLODServletTest {
 		EuropeanaTestResponse response = tester.getEuropeanaResponse(request);
 
 		assertEquals(expected_response, response);
-		
+
 	}
-	
-	
-	
-	
+
 	/*
 	 * The following tests were derived from real-world requests and responses
 	 * and should verify the servlet's functionality
@@ -152,12 +156,12 @@ public class EuropeanaLODServletTest {
 			ResourceType.RM, ResourceType.PROXY_EUROPEANA,
 			ResourceType.PROXY_PROVIDER };
 
-
 	// the accept headers for document requests to be tested
-	private String[] documentAcceptHeaders = new String[] { 
-			"text/html", // the simplest case 
-			"application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5" // Google Chrome 
-			};
+	private String[] documentAcceptHeaders = new String[] {
+			"text/html", // the simplest case
+			"application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5" // Google
+																											// Chrome
+	};
 
 	// the accept headers for data requests to be tested
 	private String[] dataAcceptHeaders = new String[] { "application/rdf+xml" };
@@ -179,7 +183,6 @@ public class EuropeanaLODServletTest {
 
 	}
 
-	
 	/**
 	 * Tests non-information document requests for all combinations of itemIDs,
 	 * resourceTypes, and document accept headers
@@ -259,7 +262,8 @@ public class EuropeanaLODServletTest {
 
 		EuropeanaTestResponse expected_response = new EuropeanaTestResponse();
 		expected_response.setStatus(303);
-		expected_response.setContentType(EuropeanaResponse.ContentType.HTML.toString());
+		expected_response.setContentType(EuropeanaResponse.ContentType.HTML
+				.toString());
 		expected_response.setLocation("http://www.europeana.eu/portal/record/"
 				+ itemID + ".html");
 
@@ -286,7 +290,7 @@ public class EuropeanaLODServletTest {
 
 		EuropeanaTestResponse expected_response = new EuropeanaTestResponse();
 		expected_response.setStatus(303);
-		expected_response.setContentType(acceptHeader);
+		expected_response.setContentType(EuropeanaResponse.getResponseContentType(acceptHeader).toString());
 		expected_response.setLocation("http://data.europeana.eu/data"
 				+ resourceType + "/" + itemID);
 

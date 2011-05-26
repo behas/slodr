@@ -14,6 +14,7 @@
       <plugin>
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
+        <version>7.4.0.RC0</version>
         <configuration>
           <contextPath>/</contextPath>
           <scanIntervalSeconds>10</scanIntervalSeconds>
@@ -31,13 +32,15 @@
       <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
+
+
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty-servlet-tester</artifactId>
       <version>7.0.0.pre5</version>
       <scope>test</scope>
     </dependency>
-  	
+
   	<dependency>
   		<groupId>javax.servlet</groupId>
   		<artifactId>servlet-api</artifactId>
@@ -45,6 +48,7 @@
   		<type>jar</type>
   		<scope>compile</scope>
   	</dependency>
+
   	<dependency>
   		<groupId>com.hp.hpl.jena</groupId>
   		<artifactId>jena</artifactId>

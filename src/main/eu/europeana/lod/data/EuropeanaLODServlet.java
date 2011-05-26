@@ -100,8 +100,12 @@ public class EuropeanaLODServlet extends HttpServlet {
 			String targetURI = request.getRDFInformationResource();
 			response.setRedirectTo(targetURI);
 
-			resp.setContentType(request.getPreferredAcceptMimeType());
-
+			String prefMimeType = request.getPreferredAcceptMimeType();
+			
+			String contentType = EuropeanaResponse.getResponseContentType(prefMimeType).toString();
+			
+			response.setContentType(contentType);
+			
 			return;
 
 		} else {

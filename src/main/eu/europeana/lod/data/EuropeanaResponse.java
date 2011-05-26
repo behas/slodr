@@ -2,6 +2,8 @@ package eu.europeana.lod.data;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -19,6 +21,20 @@ import eu.europeana.lod.util.AcceptHeaderHandler.MimeTypePattern;
  */
 public class EuropeanaResponse extends HttpServletResponseWrapper {
 
+	
+	public static Map<MimeTypePattern,ContentType> mimeTypeContentTypeMap = new HashMap<MimeTypePattern, ContentType> ();
+	
+	static {
+		
+		mimeTypeContentTypeMap.put(MimeTypePattern.RDF, ContentType.RDF);
+		mimeTypeContentTypeMap.put(MimeTypePattern.TTL, ContentType.TTL);
+		mimeTypeContentTypeMap.put(MimeTypePattern.N3, ContentType.N3);
+		mimeTypeContentTypeMap.put(MimeTypePattern.HTML, ContentType.HTML);
+		
+	}
+	
+	
+	
 	/**
 	 * MimeTypes returned in Europeana LOD responses
 	 * 
@@ -27,8 +43,8 @@ public class EuropeanaResponse extends HttpServletResponseWrapper {
 	 */
 	public enum ContentType {
 
-		RDF("application/rdf+xml"), HTML("text/html"), TTL("text/turtle"), N3(
-				"text/n3");
+		RDF("application/rdf+xml; charset=UTF-8"), HTML("text/html"), TTL("text/turtle; charset=UTF-8"), N3(
+				"text/n3; charset=UTF-8");
 
 		private String value;
 
@@ -36,12 +52,31 @@ public class EuropeanaResponse extends HttpServletResponseWrapper {
 			this.value = value;
 		}
 
+		@Override
 		public String toString() {
 			return value;
 		}
 
 	}
 
+
+	/**
+	 * Returns the response content-type for a given request mime-type
+	 * 
+	 * @param requestMimeType
+	 * @return
+	 */
+	public static ContentType getResponseContentType(String requestMimeType) {
+		
+		MimeTypePattern mimeTypePattern = MimeTypePattern.getMatchingMimeType(requestMimeType);
+		
+		if (mimeTypePattern == null) {
+			return ContentType.HTML;
+		} else {
+			return mimeTypeContentTypeMap.get(mimeTypePattern);
+		}
+		
+	}
 	
 	
 	/**
@@ -130,6 +165,7 @@ public class EuropeanaResponse extends HttpServletResponseWrapper {
 			RDFWriter writer = model.getWriter("RDF/XML-ABBREV");
 			writer.setProperty("showXmlDeclaration", "true");
 			writer.setProperty("blockRules", "propertyAttr");
+			writer.setProperty("allowBadURIs", "true");
 			writer.write(
 					model,
 					new OutputStreamWriter(response.getOutputStream(), "utf-8"),
