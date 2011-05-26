@@ -39,12 +39,7 @@ public class EuropeanaLODServletTest {
 	public void startServlet() throws Exception {
 		tester = new EuropeanaTester();
 		tester.setContextPath("/");
-		tester.addServlet(ConnegServlet.class, "/rm/*");
-		tester.addServlet(ConnegServlet.class, "/aggregation/*");
-		tester.addServlet(ConnegServlet.class, "/proxy/*");
-		tester.addServlet(ConnegServlet.class, "/item/*");
-		tester.addServlet(ConnegServlet.class, "/");
-		tester.addServlet(DataServlet.class, "/data/*");
+		tester.addServlet(EuropeanaLODServlet.class, "/*");
 		tester.start();
 	}
 

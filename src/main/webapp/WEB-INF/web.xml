@@ -6,21 +6,14 @@
 	<display-name>Europeana Linked Data Pilot Servlet</display-name>
 
 	<servlet>
-		<servlet-name>ConnegServlet</servlet-name>
-		<servlet-class>eu.europeana.lod.data.ConnegServlet</servlet-class>
+		<servlet-name>EuropeanaLODServlet</servlet-name>
+		<servlet-class>eu.europeana.lod.data.EuropeanaLODServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-	
-	<servlet>
-		<servlet-name>DataServlet</servlet-name>
-		<servlet-class>eu.europeana.lod.data.DataServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
- 
+	 
 	<servlet-mapping>
-    	<servlet-name>ConnegServlet</servlet-name>
+    	<servlet-name>EuropeanaLODServlet</servlet-name>
     	<url-pattern>/*</url-pattern>
   	</servlet-mapping>
- 
 
 </web-app>
