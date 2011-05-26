@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
-
-import eu.europeana.lod.data.EuropeanaRequest.MimeTypePattern;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class parses and gives convenient (ordered) access to HTTP Accept Header
@@ -134,6 +134,48 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 		
 
 	}
+	
+	
+	/**
+	 * This enum maps mime-type patterns to document serialization formats 
+	 * 
+	 * @author haslhofer
+	 *
+	 */
+	public enum MimeTypePattern {
+
+		RDF(".*rdf.*|.*rdf\\/xml.*|.*application\\/rdf\\+xml.*"),
+		HTML(".*application\\/xml.*|.*text\\/html.*|.*application\\/xhtml\\+xml.*"),
+		TTL(".*ttl.*|.*text\\/turtle.*|.*application\\/x\\-turtle.*|.*application\\/turtle.*|.*text\\/rdf\\+turtle.*"),
+		N3(".*n3.*|.*text\\/n3.*|.*text\\/rdf\\+n3.*");
+
+		private String value;
+
+		MimeTypePattern(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return value;
+		}
+		
+		public static boolean matchMIMEType(String acceptHeader, MimeTypePattern... mimeTypes) {
+			for (MimeTypePattern mimeType : mimeTypes) {
+				Pattern pattern = Pattern.compile(mimeType.getValue());
+				Matcher matcher = pattern.matcher(acceptHeader);
+
+				if (matcher.matches()) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		
+		
+	}
+	
+	
 
 	private static final long serialVersionUID = 6496628828622396063L;
 

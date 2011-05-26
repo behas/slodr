@@ -1,12 +1,10 @@
 package eu.europeana.lod.data;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import eu.europeana.lod.util.AcceptHeaderHandler;
+import eu.europeana.lod.util.AcceptHeaderHandler.MimeTypePattern;
 
 
 /**
@@ -73,12 +71,6 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	
 	
 	
-	public boolean isValidRequest() {
-		// TODO: run some basic regex test
-		//return (!acceptHeader.equals(""));
-		return true;
-	}
-
 	public String getEuropeanaID() {
 
 		//TODO: improve code; e.g., by regex
@@ -212,47 +204,6 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 		
 	}
 	
-	
-	
-	
-	/**
-	 * This enum maps mime-type patterns to document serialization formats 
-	 * 
-	 * @author haslhofer
-	 *
-	 */
-	public enum MimeTypePattern {
 
-		RDF(".*rdf.*|.*rdf\\/xml.*|.*application\\/rdf\\+xml.*"),
-		HTML(".*application\\/xml.*|.*text\\/html.*|.*application\\/xhtml\\+xml.*"),
-		TTL(".*ttl.*|.*text\\/turtle.*|.*application\\/x\\-turtle.*|.*application\\/turtle.*|.*text\\/rdf\\+turtle.*"),
-		N3(".*n3.*|.*text\\/n3.*|.*text\\/rdf\\+n3.*");
-
-		private String value;
-
-		MimeTypePattern(String value) {
-			this.value = value;
-		}
-
-		public String getValue() {
-			return value;
-		}
-		
-		public static boolean matchMIMEType(String acceptHeader, MimeTypePattern... mimeTypes) {
-			for (MimeTypePattern mimeType : mimeTypes) {
-				Pattern pattern = Pattern.compile(mimeType.getValue());
-				Matcher matcher = pattern.matcher(acceptHeader);
-
-				if (matcher.matches()) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		
-		
-	}
-	
 
 }

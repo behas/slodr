@@ -1,7 +1,6 @@
 package eu.europeana.lod.data;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,10 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.velocity.context.Context;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFWriter;
 import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
-import eu.europeana.lod.data.EuropeanaRequest.MimeTypePattern;
 import eu.europeana.lod.util.VelocityHelper;
 
 /**
@@ -38,15 +35,16 @@ public class EuropeanaLODServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		// wrap the request and response into Europeana-specific request classes
-		EuropeanaRequest request = new EuropeanaRequest(req);
-
+		// wrap the response
 		EuropeanaResponse response = new EuropeanaResponse(resp);
 
-		// check if the request is valid at all
-		if (!request.isValidRequest()) {
-			send404(resp, req.getRequestURI(), "This is not a valid request!");
-			return;
+		// try to wrap the request; if fails -> URI not supported
+		EuropeanaRequest request = null;
+		try {
+			request = new EuropeanaRequest(req);
+		} catch (Exception e) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown URI "
+					+ req.getRequestURI());
 		}
 
 		if (req.getRequestURI().startsWith("/data")) {
@@ -136,7 +134,6 @@ public class EuropeanaLODServlet extends HttpServlet {
 
 		Model model = endpoint.execDescribe();
 
-
 		if (!model.isEmpty()) {
 
 			response.addHeader("Vary", "Accept");
@@ -145,68 +142,13 @@ public class EuropeanaLODServlet extends HttpServlet {
 
 			response.setContentType(requestedMimeType + "; charset=UTF-8");
 
-			getWriter(requestedMimeType).write(model, response);
-
-			response.getOutputStream().flush();
+			response.writeModel(model, requestedMimeType);
 
 		} else {
 
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}
 
-	}
-
-
-	/*
-	 * The following code parts are taken from pubby
-	 * 
-	 * https://github.com/cygri/pubby/
-	 */
-
-	private ModelWriter getWriter(String mediaType) {
-
-		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.RDF))
-			return new RDFXMLWriter();
-		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.TTL))
-			return new TurtleWriter();
-		if (MimeTypePattern.matchMIMEType(mediaType, MimeTypePattern.N3))
-			return new NTriplesWriter();
-
-		return new NTriplesWriter();
-	}
-
-	private interface ModelWriter {
-		void write(Model model, HttpServletResponse response)
-				throws IOException;
-	}
-
-	private class NTriplesWriter implements ModelWriter {
-		public void write(Model model, HttpServletResponse response)
-				throws IOException {
-			model.getWriter("N-TRIPLES").write(model,
-					response.getOutputStream(), null);
-		}
-	}
-
-	private class TurtleWriter implements ModelWriter {
-		public void write(Model model, HttpServletResponse response)
-				throws IOException {
-			model.getWriter("TURTLE").write(model, response.getOutputStream(),
-					null);
-		}
-	}
-
-	private class RDFXMLWriter implements ModelWriter {
-		public void write(Model model, HttpServletResponse response)
-				throws IOException {
-			RDFWriter writer = model.getWriter("RDF/XML-ABBREV");
-			writer.setProperty("showXmlDeclaration", "true");
-			writer.setProperty("blockRules", "propertyAttr");
-			writer.write(
-					model,
-					new OutputStreamWriter(response.getOutputStream(), "utf-8"),
-					null);
-		}
 	}
 
 	protected void send404(HttpServletResponse resp, String resourceURI,
