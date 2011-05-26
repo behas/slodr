@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 
 	/**
-	 * We assume that HTML is default (not a 406 response)
+	 * We assume that HTML is default
 	 */
 	public static String DEFAULT_MIME_TYPE = "text/html";
 
@@ -71,7 +71,7 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 			
 		}
 		
-		return null;
+		return DEFAULT_MIME_TYPE;
 	}
 
 	/**

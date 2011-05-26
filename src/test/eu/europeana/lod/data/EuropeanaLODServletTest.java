@@ -50,6 +50,7 @@ public class EuropeanaLODServletTest {
 
 	/* The following test-cases reflect real-world requests and responses */
 
+
 	/**
 	 * Bug report Antoine 26.05 / URI serialization problem in RDF/XML output
 	 */
@@ -159,8 +160,12 @@ public class EuropeanaLODServletTest {
 	// the accept headers for document requests to be tested
 	private String[] documentAcceptHeaders = new String[] {
 			"text/html", // the simplest case
-			"application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5" // Google
-																											// Chrome
+			"application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5", // Google Chrome
+			"image/gif, image/jpeg, " +
+			"image/pjpeg, image/pjpeg, application/x-shockwave-flash, " +
+			"application/xaml+xml, application/vnd.ms-xpsdocument, " +
+			"application/x-ms-xbap, application/x-ms-application, " +
+			"application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*" // IE 8
 	};
 
 	// the accept headers for data requests to be tested
@@ -290,7 +295,8 @@ public class EuropeanaLODServletTest {
 
 		EuropeanaTestResponse expected_response = new EuropeanaTestResponse();
 		expected_response.setStatus(303);
-		expected_response.setContentType(EuropeanaResponse.getResponseContentType(acceptHeader).toString());
+		expected_response.setContentType(EuropeanaResponse
+				.getResponseContentType(acceptHeader).toString());
 		expected_response.setLocation("http://data.europeana.eu/data"
 				+ resourceType + "/" + itemID);
 

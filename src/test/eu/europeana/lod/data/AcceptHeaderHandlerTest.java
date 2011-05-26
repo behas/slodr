@@ -73,10 +73,18 @@ public class AcceptHeaderHandlerTest {
 		AcceptHeaderHandler handler = new AcceptHeaderHandler(
 				"application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
 
-		System.out.println(handler);
-
 		assertEquals("application/xml", handler.getPreferredMimeType());
 
 	}
 
+	@Test
+	public void testIE8Headers() throws Exception {
+
+		String acceptHeader = "image/gif, image/jpeg, image/pjpeg, image/pjpeg, application/x-shockwave-flash, application/xaml+xml, application/vnd.ms-xpsdocument, application/x-ms-xbap, application/x-ms-application, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*";
+
+		AcceptHeaderHandler handler = new AcceptHeaderHandler(acceptHeader);
+
+		assertEquals("text/html", handler.getPreferredMimeType());
+
+	}
 }
