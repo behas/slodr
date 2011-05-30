@@ -27,10 +27,30 @@ import eu.europeana.lod.util.VelocityHelper;
  */
 public class EuropeanaLODServlet extends HttpServlet {
 
-	private String DOC_WEB_PAGE = "http://version1.europeana.eu/web/lod/";
+	
+	//TODO: find out how to set servlet params in tests and get rid of configs. 
+	
+	protected String website = "http://version1.europeana.eu/web/lod/";
 
-	private String SPARQL_ENDPOINT = "http://data.mminf.univie.ac.at/sparql";
+	protected String sparqlEndpoint = "http://data.mminf.univie.ac.at/sparql";
 
+	
+	@Override
+	public void init() throws ServletException {
+
+		getServletContext().log("Initializing Europeana LOD Servlet");
+		
+		if (getServletConfig().getInitParameter("website") != null) {
+			website = getServletConfig().getInitParameter("website");
+		}
+		
+		if (getServletConfig().getInitParameter("sparqlEndpoint") != null) {
+			sparqlEndpoint = getServletConfig().getInitParameter("sparqlEndpoint");
+		}
+		
+	}
+	
+	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -59,7 +79,7 @@ public class EuropeanaLODServlet extends HttpServlet {
 			// redirect to documentation page if document request
 			if (request.isDocumentRequest()) {
 
-				response.setRedirectTo(DOC_WEB_PAGE);
+				response.setRedirectTo(website);
 				response.setEuropeanaContentType(EuropeanaResponse.ContentType.HTML);
 
 				// deliver void description if data request
@@ -134,8 +154,8 @@ public class EuropeanaLODServlet extends HttpServlet {
 		// Retrieve the model
 		String query = "DESCRIBE <" + resourceURI + ">";
 
-		QueryEngineHTTP endpoint = new QueryEngineHTTP(SPARQL_ENDPOINT, query);
-
+		QueryEngineHTTP endpoint = new QueryEngineHTTP(sparqlEndpoint, query);
+		
 		Model model = endpoint.execDescribe();
 
 		if (!model.isEmpty()) {

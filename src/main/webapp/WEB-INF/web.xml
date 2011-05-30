@@ -8,6 +8,14 @@
 	<servlet>
 		<servlet-name>EuropeanaLODServlet</servlet-name>
 		<servlet-class>eu.europeana.lod.data.EuropeanaLODServlet</servlet-class>
+		<init-param>
+			<param-name>sparqlEndpoint</param-name>
+			<param-value>http://data.mminf.univie.ac.at/sparql</param-value>
+		</init-param>
+		<init-param>
+			<param-name>website</param-name>
+			<param-value>http://version1.europeana.eu/web/lod/</param-value>
+		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	 

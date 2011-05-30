@@ -87,4 +87,18 @@ public class AcceptHeaderHandlerTest {
 		assertEquals("text/html", handler.getPreferredMimeType());
 
 	}
+	
+	@Test
+	public void testEqualHeaders() throws Exception {
+		
+		
+		String acceptHeader = "text/html;level=1, application/rdf+xml; q=1, text/html, */*";
+		
+		AcceptHeaderHandler handler = new AcceptHeaderHandler(acceptHeader);
+		
+		assertEquals("text/html", handler.getPreferredMimeType());
+		
+	}
+	
+	
 }
