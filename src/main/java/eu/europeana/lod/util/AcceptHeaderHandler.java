@@ -2,7 +2,9 @@ package eu.europeana.lod.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +25,7 @@ import java.util.regex.Pattern;
 public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 
 	/**
-	 * We assume that HTML is default
+	 * We assume that HTML is default if no or an empty accept header is given
 	 */
 	public static String DEFAULT_MIME_TYPE = "text/html";
 
@@ -48,30 +50,27 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 	/**
 	 * Returns the supported mime-type with highest priority; q-values omitted
 	 * 
-	 * Returns the default mime-type (HTML) if none of the mime-types is supported
+	 * Returns NULL if the mime-type is unknown
 	 * 
 	 * @return
 	 */
-	public String getPreferredMimeType() {
+	public MimeTypePattern getPreferredMimeType() {
 		
 		for (Float key : keySet()) {
 			
 			for (String mimeType: get(key)) {
 				
-				if (MimeTypePattern.matchMIMEType(mimeType, 
-						MimeTypePattern.HTML,
-						MimeTypePattern.RDF,
-						MimeTypePattern.N3,
-						MimeTypePattern.TTL)) {
-					
-					return mimeType;
-				}
+				MimeTypePattern mt = MimeTypePattern.getMatchingMimeType(mimeType);
 				
+				if (mt != null) {
+					return mt;
+				}
+								
 			}
 			
 		}
 		
-		return DEFAULT_MIME_TYPE;
+		return null;
 	}
 
 	/**
@@ -137,6 +136,52 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 	
 	
 	/**
+	 * Returns the response content type for a given request mime type pattern 
+	 */
+	public static ContentType getContentType(MimeTypePattern mimeTypePattern) {
+
+		return mimeTypeContentTypeMap.get(mimeTypePattern);
+	
+	}
+	
+	
+	/**
+	 * Returns the response content type for a given request mime type 
+	 */
+	public static ContentType getContentType(String acceptHeader) {
+		
+		MimeTypePattern mt = getMimeType(acceptHeader);
+		
+		return getContentType(mt);
+		
+	}
+	
+	
+	/**
+	 * Returns the matching mime type class for a g given accept header 
+	 */
+	public static MimeTypePattern getMimeType(String acceptHeader) {
+
+		return new AcceptHeaderHandler(acceptHeader).getPreferredMimeType();
+
+	}
+	
+	
+	/**
+	 * Mapping between the request mime-types (Accept header) and the response content-types 
+	 */
+	public static Map<MimeTypePattern,ContentType> mimeTypeContentTypeMap = new HashMap<MimeTypePattern, ContentType> ();
+	
+	static {
+		
+		mimeTypeContentTypeMap.put(MimeTypePattern.RDF, ContentType.RDF);
+		mimeTypeContentTypeMap.put(MimeTypePattern.TTL, ContentType.TTL);
+		mimeTypeContentTypeMap.put(MimeTypePattern.N3, ContentType.N3);
+		mimeTypeContentTypeMap.put(MimeTypePattern.HTML, ContentType.HTML);
+		
+	}
+	
+	/**
 	 * This enum maps mime-type patterns to document serialization formats 
 	 * 
 	 * @author haslhofer
@@ -145,7 +190,7 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 	public enum MimeTypePattern {
 
 		RDF(".*rdf.*|.*rdf\\/xml.*|.*application\\/rdf\\+xml.*"),
-		HTML(".*application\\/xml.*|.*text\\/html.*|.*application\\/xhtml\\+xml.*"),
+		HTML(".*application\\/xml.*|.*text\\/html.*|.*application\\/xhtml\\+xml.*|\\*\\/\\*"),
 		TTL(".*ttl.*|.*text\\/turtle.*|.*application\\/x\\-turtle.*|.*application\\/turtle.*|.*text\\/rdf\\+turtle.*"),
 		N3(".*n3.*|.*text\\/n3.*|.*text\\/rdf\\+n3.*");
 
@@ -205,6 +250,32 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 	}
 	
 	
+	/**
+	 * MimeTypes returned in Europeana LOD responses
+	 * 
+	 * @author haslhofer
+	 * 
+	 */
+	public enum ContentType {
+
+		RDF("application/rdf+xml; charset=UTF-8"),
+		HTML("text/html"),
+		TTL("text/turtle; charset=UTF-8"),
+		N3("text/n3; charset=UTF-8");
+
+		private String value;
+
+		ContentType(String value) {
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return value;
+		}
+
+	}
+
 
 	private static final long serialVersionUID = 6496628828622396063L;
 

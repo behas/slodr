@@ -10,6 +10,10 @@ import javax.servlet.http.HttpServletResponse;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
+import eu.europeana.lod.util.AcceptHeaderHandler;
+import eu.europeana.lod.util.AcceptHeaderHandler.ContentType;
+import eu.europeana.lod.util.AcceptHeaderHandler.MimeTypePattern;
+
 /**
  * This servlet handles all requests received by the Europeana Linked Data
  * Pilot.
@@ -93,12 +97,12 @@ public class EuropeanaLODServlet extends HttpServlet {
 		if (request.isRootRequest()) {
 			// redirect to the project website
 			response.setRedirectTo(website);
-			response.setEuropeanaContentType(EuropeanaResponse.ContentType.HTML);
+			response.setEuropeanaContentType(AcceptHeaderHandler.ContentType.HTML);
 		} else {
 			// redirect to the item page in the Europeana portal
 			String targetURI = request.getDocumentInformationResource();
 			response.setRedirectTo(targetURI);
-			response.setEuropeanaContentType(EuropeanaResponse.ContentType.HTML);
+			response.setEuropeanaContentType(AcceptHeaderHandler.ContentType.HTML);
 		}
 		
 	}
@@ -111,6 +115,7 @@ public class EuropeanaLODServlet extends HttpServlet {
 	private void handleDataRequest(EuropeanaRequest request,
 			EuropeanaResponse response) throws ServletException, IOException {
 
+		
 		if (request.isRootRequest()) {
 			// TODO: deliver void description
 			response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
@@ -120,10 +125,11 @@ public class EuropeanaLODServlet extends HttpServlet {
 		} else {
 			
 			// set response content type (common for IR and NIR)
-			String prefMimeType = request.getPreferredAcceptMimeType();
-			String contentType = EuropeanaResponse.getResponseContentType(
-					prefMimeType).toString();
-			response.setContentType(contentType);
+			MimeTypePattern prefMimeType = request.getPreferredAcceptMimeType();
+			
+			ContentType contentType = AcceptHeaderHandler.getContentType(prefMimeType);
+			
+			response.setContentType(contentType.toString());
 
 			
 			if (request.isInformationResourceRequest()) {
@@ -142,11 +148,7 @@ public class EuropeanaLODServlet extends HttpServlet {
 
 					response.addHeader("Vary", "Accept");
 
-					String requestedMimeType = request.getPreferredAcceptMimeType();
-
-					response.setContentType(requestedMimeType + "; charset=UTF-8");
-
-					response.writeModel(model, requestedMimeType);
+					response.writeModel(model, contentType.toString());
 
 				} else {
 

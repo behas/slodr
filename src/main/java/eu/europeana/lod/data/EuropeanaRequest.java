@@ -74,7 +74,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 	/* Info parsed from request */
 
-	private AcceptHeaderHandler acceptHandler;
+	private MimeTypePattern mimeType;
 
 	private String baseURI;
 
@@ -91,7 +91,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 		// parse Accept Header Field
 		String acceptHeader = getHeader("accept");
-		this.acceptHandler = new AcceptHeaderHandler(acceptHeader);
+		this.mimeType = AcceptHeaderHandler.getMimeType(acceptHeader);
 
 		// construct the baseURI
 		if (getServerPort() != 80) {
@@ -170,12 +170,12 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 */
 	public boolean isDocumentRequest() {
 
-		String mimeType = acceptHandler.getPreferredMimeType();
-
-		boolean documentRequest = MimeTypePattern.matchMIMEType(mimeType,
-				MimeTypePattern.HTML);
-
-		return documentRequest;
+		if ( this.mimeType.equals(MimeTypePattern.HTML) ) {
+			return true;
+		}
+		
+		return false;
+		
 	}
 
 	/**
@@ -186,12 +186,12 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 */
 	public boolean isDataRequest() {
 
-		String mimeType = acceptHandler.getPreferredMimeType();
+		if ( this.mimeType.equals(MimeTypePattern.RDF) || this.mimeType.equals(MimeTypePattern.TTL) || this.mimeType.equals(MimeTypePattern.N3) ) {
+			return true;
+		}
+		
+		return false;
 
-		boolean dataRequest = MimeTypePattern.matchMIMEType(mimeType,
-				MimeTypePattern.RDF, MimeTypePattern.TTL, MimeTypePattern.N3);
-
-		return dataRequest;
 	}
 
 	/**
@@ -206,9 +206,9 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 * 
 	 * @return
 	 */
-	public String getPreferredAcceptMimeType() {
+	public MimeTypePattern getPreferredAcceptMimeType() {
 
-		return acceptHandler.getPreferredMimeType();
+		return this.mimeType;
 
 	}
 

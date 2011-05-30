@@ -24,6 +24,8 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import eu.europeana.lod.data.EuropeanaRequest.ResourceType;
+import eu.europeana.lod.util.AcceptHeaderHandler;
+import eu.europeana.lod.util.AcceptHeaderHandler.ContentType;
 
 /**
  * This class tests and verifies the functionality of the EuropeanaLOD Servlet.
@@ -270,7 +272,7 @@ public class EuropeanaLODServletTest {
 
 		EuropeanaTestResponse expected_response = new EuropeanaTestResponse();
 		expected_response.setStatus(303);
-		expected_response.setContentType(EuropeanaResponse.ContentType.HTML
+		expected_response.setContentType(AcceptHeaderHandler.ContentType.HTML
 				.toString());
 		expected_response.setLocation("http://www.europeana.eu/portal/record/"
 				+ itemID + ".html");
@@ -296,10 +298,11 @@ public class EuropeanaLODServletTest {
 		request.setHTTPRequestURI(httpRequestURI);
 		request.setAccept(acceptHeader);
 
+		ContentType responseContentType = AcceptHeaderHandler.getContentType(acceptHeader);
+		
 		EuropeanaTestResponse expected_response = new EuropeanaTestResponse();
 		expected_response.setStatus(303);
-		expected_response.setContentType(EuropeanaResponse
-				.getResponseContentType(acceptHeader).toString());
+		expected_response.setContentType(responseContentType.toString());
 		expected_response.setLocation("http://data.europeana.eu/data"
 				+ resourceType + itemID);
 
