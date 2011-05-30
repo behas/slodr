@@ -48,7 +48,7 @@ public class AcceptHeaderHandler extends TreeMap<Float, List<String>> {
 	/**
 	 * Returns the supported mime-type with highest priority; q-values omitted
 	 * 
-	 * Returns null if none of the mime-types is supported
+	 * Returns the default mime-type (HTML) if none of the mime-types is supported
 	 * 
 	 * @return
 	 */

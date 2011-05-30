@@ -1,70 +1,164 @@
 package eu.europeana.lod.data;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import eu.europeana.lod.util.AcceptHeaderHandler;
 import eu.europeana.lod.util.AcceptHeaderHandler.MimeTypePattern;
 
-
 /**
  * This class encapsulates the logic of the Europeana Linked Data URI design and
  * provides access methods to request information.
+ * 
+ * Depending on the mime-type a request can ask for data (RDF, TTL, N3) or
+ * documents (HTML)
+ * 
+ * Depending on the URI path a request can ask for a non-information resource or
+ * an information resource (/data)
+ * 
+ * If a request has no URI path it is considered a root request
  * 
  * @author haslhofer
  * @author cesareconcordia
  * 
  */
 public class EuropeanaRequest extends HttpServletRequestWrapper {
-	
+
 	/* CONSTANTS */
-	
+
 	public static String IR_PATH = "/data";
 
 	public static final String EUROPEANA_HTML_BASE_URL = "http://www.europeana.eu/portal/record/";
-	
-	/* Info parsed from request */
-	
-	private AcceptHeaderHandler acceptHandler;
-	
-	private String host = "http://data.europeana.eu";
 
-	
-	public static String AGGR_EU_PATH = "/aggregation/europeana/";
-	public static String AGGR_PR_PATH = "/aggregation/provider/";
-	public static String PROXY_EU_PATH = "/proxy/europeana/";
-	public static String PROXY_PR_PATH = "/proxy/provider/";
-	public static String RM_PATH = "/rm/europeana/";
-	public static String ITEM_PATH = "/item/";
-	
-	
-	
-	public EuropeanaRequest(HttpServletRequest request) {
+	public static enum ResourceType {
+
+		PROXY_PROVIDER("/proxy/provider/"),
+		PROXY_EUROPEANA("/proxy/europeana/"),
+		AGGREGATION_PROVIDER("/aggregation/provider/"),
+		AGGREGATION_EUROPEANA("/aggregation/europeana/"),
+		RM("/rm/europeana/"),
+		ITEM("/item/");
+
+		private String pathPrefix;
+
+		private ResourceType(String pathPrefix) {
+			this.pathPrefix = pathPrefix;
+		}
+
+		/**
+		 * Returns the matching resource type for a given request URI
+		 * 
+		 * Returns null, if there is no matching resource type
+		 * 
+		 */
+		public static ResourceType getResourceType(String requestURI) {
+
+			for (ResourceType resourceType : values()) {
+
+				if (requestURI.startsWith(resourceType.toString())) {
+					return resourceType;
+				}
+
+			}
+
+			return null;
+		}
+
+		@Override
+		public String toString() {
+			return pathPrefix;
+		}
+
+	}
+
+	/* Info parsed from request */
+
+	private AcceptHeaderHandler acceptHandler;
+
+	private String host;
+
+	private ResourceType resourceType;
+
+	private String europeanaID;
+
+	private boolean rootRequest = false;
+
+	private boolean informationResourceRequest = false;
+
+	public EuropeanaRequest(HttpServletRequest request) throws ServletException {
 		super(request);
-		
+
 		// parse Accept Header Field
 		String acceptHeader = getHeader("accept");
 		this.acceptHandler = new AcceptHeaderHandler(acceptHeader);
-		
+
 		// retrieve request host
 		this.host = getServerName();
-				
+
 		// parse Europeana URI path
-		
-		
+		if (getRequestURI() == null || getRequestURI().equalsIgnoreCase("/")) {
+			this.rootRequest = true;
+		} else {
+			parseRequestURI(getRequestURI());
+		}
+
 	}
 
-	
+	/**
+	 * Parses info from the request by sequentially chopping of requestURI paths
+	 */
+	private void parseRequestURI(String requestURI) throws ServletException {
+
+		// check whether the request asks for an information or non-information
+		// resource
+		if (requestURI.startsWith(IR_PATH)) {
+			this.informationResourceRequest = true;
+			requestURI = requestURI.substring(IR_PATH.length(),
+					requestURI.length());
+		}
+
+		// determine resource type
+		ResourceType resourceType = ResourceType.getResourceType(requestURI);
+		if (resourceType == null) {
+			throw new ServletException("Invalid resource type in request URI "
+					+ getRequestURI());
+		}
+		this.resourceType = resourceType;
+		requestURI = requestURI.substring(resourceType.toString().length(),
+				requestURI.length());
+
+		// determine europeanaID -> the remainder of the request URI
+		if (requestURI.length() == 0) {
+			throw new ServletException("Invalid europeanaID in request URI "
+					+ getRequestURI());
+		}
+		this.europeanaID = requestURI;
+
+	}
+
 	/**
 	 * Returns true if the URI path is empty -> it is a root request
 	 */
 	public boolean isRootRequest() {
-		
-		if (getRequestURI() == null || getRequestURI().equalsIgnoreCase("/")) {
-			return true;
-		}
-		
-		return false;
+
+		return this.rootRequest;
+	}
+
+	/**
+	 * Returns whether or not a request asks for an information resource
+	 */
+	public boolean isInformationResourceRequest() {
+
+		return this.informationResourceRequest;
+	}
+
+	
+	/**
+	 * Returns the request's europeanaID
+	 */
+	public String getEuropeanaID() {
+		return this.europeanaID;
 	}
 	
 	
@@ -74,142 +168,94 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 * @return
 	 */
 	public String getPreferredAcceptMimeType() {
-		
+
 		return acceptHandler.getPreferredMimeType();
-		
-	}
-	
-	
-	
-	public String getEuropeanaID() {
-
-		//TODO: improve code; e.g., by regex
-		
-		String uri = getRequestURI();
-		
-		
-		// if it is a IR request, strip off IR_PATH prefix
-		if(uri.startsWith(IR_PATH)) {
-			uri = uri.substring(IR_PATH.length(), uri.length() - 1);
-		}
-
-		if (uri.startsWith(AGGR_EU_PATH)) {
-			return uri.substring(AGGR_EU_PATH.length(), uri.length());
-		} else if (uri.startsWith(AGGR_PR_PATH)) {
-			return uri.substring(AGGR_PR_PATH.length(), uri.length());
-		} else if (uri.startsWith(PROXY_EU_PATH)) {
-			return uri.substring(PROXY_EU_PATH.length(), uri.length());
-		} else if (uri.startsWith(PROXY_PR_PATH)) {
-			return uri.substring(PROXY_PR_PATH.length(), uri.length());
-		} else if (uri.startsWith(RM_PATH)) {
-			return uri.substring(RM_PATH.length(), uri.length());
-		} else if (uri.startsWith(ITEM_PATH)) {
-			return uri.substring(ITEM_PATH.length(), uri.length());
-		} else {
-			return null;
-		}
 
 	}
 
 	/**
-	 * Returns whether or not the request asks for a human-readable resource representation
+	 * Returns whether or not the request asks for a human-readable resource
+	 * representation
 	 * 
 	 * @return true if human-readable
 	 */
 	public boolean isDocumentRequest() {
-		
+
 		String mimeType = acceptHandler.getPreferredMimeType();
-		
-		boolean documentRequest = MimeTypePattern.matchMIMEType(mimeType, MimeTypePattern.HTML);
-		
+
+		boolean documentRequest = MimeTypePattern.matchMIMEType(mimeType,
+				MimeTypePattern.HTML);
+
 		return documentRequest;
 	}
 
 	/**
-	 * Returns whether or not the request asks for a machine-readable resource representation
+	 * Returns whether or not the request asks for a machine-readable resource
+	 * representation
 	 * 
 	 * @return true if machine-readable
 	 */
 	public boolean isDataRequest() {
-		
+
 		String mimeType = acceptHandler.getPreferredMimeType();
 
-		boolean dataRequest = MimeTypePattern.matchMIMEType(mimeType, MimeTypePattern.RDF, MimeTypePattern.TTL, 
-				MimeTypePattern.N3);
-		
+		boolean dataRequest = MimeTypePattern.matchMIMEType(mimeType,
+				MimeTypePattern.RDF, MimeTypePattern.TTL, MimeTypePattern.N3);
+
 		return dataRequest;
 	}
-	
+
 	/**
-	 * Returns the non-information resource URI for a given information resource URI
+	 * Returns the requested resource type (europeana/provider
+	 * proxy/aggregation/item/rm)
 	 * 
-	 * e.g., 
+	 * @return
+	 */
+	public ResourceType getResourceType() {
+
+		return this.resourceType;
+
+	}
+
+	/**
+	 * Returns the non-information resource URI for a given information resource
+	 * URI
 	 * 
-	 * http://data.europeana.eu/data/rm/europeana/00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154
-	 * -->
-	 * http://data.europeana.eu/rm/europeana/00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154
+	 * e.g.,
+	 * 
+	 * http://data.europeana.eu/data/rm/europeana/00000/
+	 * E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154 -->
+	 * http://data.europeana.eu/rm/europeana
+	 * /00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154
 	 * 
 	 * @return
 	 */
 	public String getNonInformationResourceURI() {
-		
+
 		// the request is a IR request
-		if(getRequestURI().startsWith(IR_PATH)) {
+		if (getRequestURI().startsWith(IR_PATH)) {
 			// chop off the /data prefix
-			return "http://" +  host + getRequestURI().substring(IR_PATH.length(), getRequestURI().length());
-			
+			return "http://"
+					+ host
+					+ getRequestURI().substring(IR_PATH.length(),
+							getRequestURI().length());
+
 		} else {
-			
+
 			// the requst is already an NIR request
-			return "http://" +  host + getRequestURI();
+			return "http://" + host + getRequestURI();
 		}
-		
+
 	}
-	
 
 	public String getHTMLInformationResource() {
-				
-		String europeanaID = getEuropeanaID();
-		
-		return "http://www.europeana.eu/portal/record/" + europeanaID + ".html";
+
+		return EUROPEANA_HTML_BASE_URL + europeanaID + ".html";
 	}
-	
 
 	public String getRDFInformationResource() {
-		
-		return "http://" +  host + EuropeanaRequest.IR_PATH + getRequestURI();
-	}
 
-	
-	
-	/**
-	 * This enum maps URI-path prefixes to EDM Resource types
-	 * 
-	 * @author haslhofer
-	 *
-	 */
-	public enum ResourceType {
-		
-		PROXY_PROVIDER("/proxy/provider"),
-		PROXY_EUROPEANA("/proxy/europeana"),
-		AGGREGATION_PROVIDER("/aggregation/provider"),
-		AGGREGATION_EUROPEANA("/aggregation/europeana"),
-		RM("/rm/europeana"),
-		ITEM("/item");
-		
-		private String pathPrefix;
-		
-		private ResourceType(String pathPrefix) {
-			this.pathPrefix = pathPrefix;
-		}
-		
-		@Override
-		public String toString() {
-			return pathPrefix;
-		}
-		
+		return "http://" + host + EuropeanaRequest.IR_PATH + getResourceType() + getEuropeanaID();
 	}
-	
-
 
 }

@@ -261,7 +261,7 @@ public class EuropeanaLODServletTest {
 	private void executeDocumentRequest(ResourceType resourceType,
 			String itemID, String acceptHeader) throws Exception {
 
-		String httpRequestURI = "http://data.europeana.eu" + resourceType + "/"
+		String httpRequestURI = "http://data.europeana.eu" + resourceType
 				+ itemID;
 
 		EuropeanaTestRequest request = new EuropeanaTestRequest();
@@ -289,7 +289,7 @@ public class EuropeanaLODServletTest {
 	private void executeNIRDataRequest(ResourceType resourceType,
 			String itemID, String acceptHeader) throws Exception {
 
-		String httpRequestURI = "http://data.europeana.eu" + resourceType + "/"
+		String httpRequestURI = "http://data.europeana.eu" + resourceType
 				+ itemID;
 
 		EuropeanaTestRequest request = new EuropeanaTestRequest();
@@ -301,7 +301,7 @@ public class EuropeanaLODServletTest {
 		expected_response.setContentType(EuropeanaResponse
 				.getResponseContentType(acceptHeader).toString());
 		expected_response.setLocation("http://data.europeana.eu/data"
-				+ resourceType + "/" + itemID);
+				+ resourceType + itemID);
 
 		EuropeanaTestResponse response = tester.getEuropeanaResponse(request);
 
@@ -318,7 +318,7 @@ public class EuropeanaLODServletTest {
 			String acceptHeader) throws Exception {
 
 		String httpRequestURI = "http://data.europeana.eu" + "/data"
-				+ resourceType + "/" + itemID;
+				+ resourceType + itemID;
 
 		EuropeanaTestRequest request = new EuropeanaTestRequest();
 		request.setHTTPRequestURI(httpRequestURI);
@@ -337,7 +337,7 @@ public class EuropeanaLODServletTest {
 		// now check the body
 		String content = response.getContent();
 
-		String nirURI = "http://data.europeana.eu" + resourceType + "/"
+		String nirURI = "http://data.europeana.eu" + resourceType
 				+ itemID;
 
 		checkRDFContent(content, nirURI, resourceType);
