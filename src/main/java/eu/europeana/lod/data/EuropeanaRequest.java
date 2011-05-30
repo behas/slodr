@@ -17,13 +17,18 @@ import eu.europeana.lod.util.AcceptHeaderHandler.MimeTypePattern;
  */
 public class EuropeanaRequest extends HttpServletRequestWrapper {
 	
+	/* CONSTANTS */
+	
+	public static String IR_PATH = "/data";
 
+	public static final String EUROPEANA_HTML_BASE_URL = "http://www.europeana.eu/portal/record/";
+	
+	/* Info parsed from request */
+	
 	private AcceptHeaderHandler acceptHandler;
 	
-	public static final String EUROPEANA_DATA_BASE_URL = "http://data.europeana.eu";
+	private String host = "http://data.europeana.eu";
 
-	public static final String EUROPEANA_DATA_BASE_HOME_PAGE_URL = "/index.html";
-	public static final String EUROPEANA_HTML_BASE_URL = "http://www.europeana.eu/portal/record/";
 	
 	public static String AGGR_EU_PATH = "/aggregation/europeana/";
 	public static String AGGR_PR_PATH = "/aggregation/provider/";
@@ -32,14 +37,19 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	public static String RM_PATH = "/rm/europeana/";
 	public static String ITEM_PATH = "/item/";
 	
-	public static String IR_PATH = "/data";
-
+	
+	
 	public EuropeanaRequest(HttpServletRequest request) {
 		super(request);
 		
+		// parse Accept Header Field
 		String acceptHeader = getHeader("accept");
+		this.acceptHandler = new AcceptHeaderHandler(acceptHeader);
 		
-		acceptHandler = new AcceptHeaderHandler(acceptHeader);
+		// retrieve request host
+		this.host = getServerName();
+				
+		// parse Europeana URI path
 		
 		
 	}
@@ -76,10 +86,6 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 		//TODO: improve code; e.g., by regex
 		
 		String uri = getRequestURI();
-		
-		if(uri.equalsIgnoreCase("/")) {
-			return(EUROPEANA_DATA_BASE_HOME_PAGE_URL);
-		}
 		
 		
 		// if it is a IR request, strip off IR_PATH prefix
@@ -150,12 +156,12 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 		// the request is a IR request
 		if(getRequestURI().startsWith(IR_PATH)) {
 			// chop off the /data prefix
-			return EUROPEANA_DATA_BASE_URL + getRequestURI().substring(IR_PATH.length(), getRequestURI().length());
+			return "http://" +  host + getRequestURI().substring(IR_PATH.length(), getRequestURI().length());
 			
 		} else {
 			
 			// the requst is already an NIR request
-			return EUROPEANA_DATA_BASE_URL + getRequestURI();
+			return "http://" +  host + getRequestURI();
 		}
 		
 	}
@@ -171,7 +177,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 	public String getRDFInformationResource() {
 		
-		return EUROPEANA_DATA_BASE_URL + EuropeanaRequest.IR_PATH + getRequestURI();
+		return "http://" +  host + EuropeanaRequest.IR_PATH + getRequestURI();
 	}
 
 	
