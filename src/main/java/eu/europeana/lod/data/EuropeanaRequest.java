@@ -76,7 +76,7 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 
 	private AcceptHeaderHandler acceptHandler;
 
-	private String host;
+	private String baseURI;
 
 	private ResourceType resourceType;
 
@@ -93,8 +93,12 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 		String acceptHeader = getHeader("accept");
 		this.acceptHandler = new AcceptHeaderHandler(acceptHeader);
 
-		// retrieve request host
-		this.host = getServerName();
+		// construct the baseURI
+		if (getServerPort() != 80) {
+			this.baseURI = "http://" + getServerName() + ":" + getServerPort();
+		} else {
+			this.baseURI = "http://" + getServerName();
+		}
 
 		// parse Europeana URI path
 		if (getRequestURI() == null || getRequestURI().equalsIgnoreCase("/")) {
@@ -109,6 +113,11 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	 * Parses info from the request by sequentially chopping of requestURI paths
 	 */
 	private void parseRequestURI(String requestURI) throws ServletException {
+
+		// strip of trailing slash
+		if (requestURI.endsWith("/")) {
+			requestURI = requestURI.substring(0, requestURI.length() - 1);
+		}
 
 		// check whether the request asks for an information or non-information
 		// resource
@@ -153,26 +162,6 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 		return this.informationResourceRequest;
 	}
 
-	
-	/**
-	 * Returns the request's europeanaID
-	 */
-	public String getEuropeanaID() {
-		return this.europeanaID;
-	}
-	
-	
-	/**
-	 * Returns the preferred mime-type given in the HTTP Accept header field
-	 * 
-	 * @return
-	 */
-	public String getPreferredAcceptMimeType() {
-
-		return acceptHandler.getPreferredMimeType();
-
-	}
-
 	/**
 	 * Returns whether or not the request asks for a human-readable resource
 	 * representation
@@ -206,6 +195,24 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	}
 
 	/**
+	 * Returns the request's europeanaID
+	 */
+	public String getEuropeanaID() {
+		return this.europeanaID;
+	}
+
+	/**
+	 * Returns the preferred mime-type given in the HTTP Accept header field
+	 * 
+	 * @return
+	 */
+	public String getPreferredAcceptMimeType() {
+
+		return acceptHandler.getPreferredMimeType();
+
+	}
+
+	/**
 	 * Returns the requested resource type (europeana/provider
 	 * proxy/aggregation/item/rm)
 	 * 
@@ -218,44 +225,40 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 	}
 
 	/**
-	 * Returns the non-information resource URI for a given information resource
-	 * URI
+	 * Returns the non-information resource URI for a given prefix
 	 * 
 	 * e.g.,
 	 * 
-	 * http://data.europeana.eu/data/rm/europeana/00000/
+	 * prefix = http://data.europeana.eu
+	 * 
 	 * E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154 -->
 	 * http://data.europeana.eu/rm/europeana
 	 * /00000/E2AAA3C6DF09F9FAA6F951FC4C4A9CC80B5D4154
 	 * 
 	 * @return
 	 */
-	public String getNonInformationResourceURI() {
+	public String getNonInformationResourceURI(String resourcePrefix) {
 
-		// the request is a IR request
-		if (getRequestURI().startsWith(IR_PATH)) {
-			// chop off the /data prefix
-			return "http://"
-					+ host
-					+ getRequestURI().substring(IR_PATH.length(),
-							getRequestURI().length());
-
-		} else {
-
-			// the requst is already an NIR request
-			return "http://" + host + getRequestURI();
-		}
-
+		return resourcePrefix + getResourceType() + getEuropeanaID();
 	}
 
-	public String getHTMLInformationResource() {
+	/**
+	 * Returns the "location" URI of the human-readable (HTML) document
+	 * 
+	 */
+	public String getDocumentInformationResource() {
 
-		return EUROPEANA_HTML_BASE_URL + europeanaID + ".html";
+		return EUROPEANA_HTML_BASE_URL + getEuropeanaID() + ".html";
 	}
 
-	public String getRDFInformationResource() {
+	/**
+	 * Returns the "location" URI of the machine-readable (RDF) document
+	 * 
+	 */
+	public String getDataInformationResource() {
 
-		return "http://" + host + EuropeanaRequest.IR_PATH + getResourceType() + getEuropeanaID();
+		return this.baseURI + EuropeanaRequest.IR_PATH + getResourceType()
+				+ getEuropeanaID();
 	}
 
 }

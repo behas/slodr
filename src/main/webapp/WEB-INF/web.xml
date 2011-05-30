@@ -16,6 +16,10 @@
 			<param-name>website</param-name>
 			<param-value>http://version1.europeana.eu/web/lod/</param-value>
 		</init-param>
+		<init-param>
+			<param-name>resourcePrefix</param-name>
+			<param-value>http://data.europeana.eu</param-value>
+		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	 
