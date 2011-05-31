@@ -74,6 +74,7 @@ public class EuropeanaLODServlet extends HttpServlet {
 			request = new EuropeanaRequest(req);
 		} catch (ServletException e) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+			return;
 		}
 
 		// distinguish between document (HTML) and data (RDF) requests

@@ -71,6 +71,27 @@ public class EuropeanaLODServletTest {
 	}
 
 	/**
+	 * NullPointerException bug 30.05 
+	 */
+	@Test
+	public void invalidResourceTest() throws Exception {
+		
+		EuropeanaTestRequest request = new EuropeanaTestRequest();
+		request.setHTTPRequestURI("http://data.europeana.eu/blub");
+		request.setAccept("text/html");
+
+		EuropeanaTestResponse expected_response = new EuropeanaTestResponse();
+		expected_response.setStatus(404);
+		expected_response.setContentType("text/html; charset=iso-8859-1");
+
+		EuropeanaTestResponse response = tester.getEuropeanaResponse(request);
+
+		assertEquals(expected_response, response);
+		
+	}
+	
+	
+	/**
 	 * Bug report Antoine 24.05 / qValue problem
 	 */
 	@Test
