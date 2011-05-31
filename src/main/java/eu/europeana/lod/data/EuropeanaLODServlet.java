@@ -7,9 +7,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
-
 import eu.europeana.lod.util.AcceptHeaderHandler;
 import eu.europeana.lod.util.AcceptHeaderHandler.ContentType;
 import eu.europeana.lod.util.AcceptHeaderHandler.MimeTypePattern;
@@ -96,13 +93,11 @@ public class EuropeanaLODServlet extends HttpServlet {
 		
 		if (request.isRootRequest()) {
 			// redirect to the project website
-			response.setRedirectTo(website);
-			response.setEuropeanaContentType(AcceptHeaderHandler.ContentType.HTML);
+			response.sendRedirectTo(website, ContentType.HTML);
 		} else {
 			// redirect to the item page in the Europeana portal
 			String targetURI = request.getDocumentInformationResource();
-			response.setRedirectTo(targetURI);
-			response.setEuropeanaContentType(AcceptHeaderHandler.ContentType.HTML);
+			response.sendRedirectTo(targetURI, ContentType.HTML);
 		}
 		
 	}
@@ -124,41 +119,22 @@ public class EuropeanaLODServlet extends HttpServlet {
 					"Data requests on root URI are not supported yet.");
 		} else {
 			
-			// set response content type (common for IR and NIR)
+			// determine response content type from accept header
 			MimeTypePattern prefMimeType = request.getPreferredAcceptMimeType();
 			
 			ContentType contentType = AcceptHeaderHandler.getContentType(prefMimeType);
-			
-			response.setContentType(contentType.toString());
 
-			
+			// deliver data in some RDF serialization
 			if (request.isInformationResourceRequest()) {
-				// deliver data in some RDF serialization
+
 				// Retrieve the non-information resource URI
 				String resourceURI = request.getNonInformationResourceURI(this.resourcePrefix);
-
-				// Retrieve the model
-				String query = "DESCRIBE <" + resourceURI + ">";
-
-				QueryEngineHTTP endpoint = new QueryEngineHTTP(sparqlEndpoint, query);
-
-				Model model = endpoint.execDescribe();
-
-				if (!model.isEmpty()) {
-
-					response.addHeader("Vary", "Accept");
-
-					response.writeModel(model, contentType.toString());
-
-				} else {
-
-					response.sendError(HttpServletResponse.SC_NOT_FOUND);
-				}
+				response.sendData(resourceURI, this.sparqlEndpoint, contentType);
 
 			} else {
 				// redirect to the information resource
 				String targetURI = request.getDataInformationResource();
-				response.setRedirectTo(targetURI);
+				response.sendRedirectTo(targetURI, contentType);
 
 
 			}
