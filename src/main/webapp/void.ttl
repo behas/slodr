@@ -1,0 +1,36 @@
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix wv: <http://vocab.org/waiver/terms/norms> .        
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+
+@prefix : <http://data.europeana.eu/void.ttl#> .
+
+
+:EuropeanaLOD a void:Dataset ;
+	dcterms:title "Europeana Linked Data Pilot" ;
+	dcterms:description "RDF version of a subset of Europeana Metadata" ;
+	dcterms:license <http://creativecommons.org/publicdomain/zero/1.0/> ;
+	foaf:homepage <http://data.europeana.eu> ;
+	dcterms:source <http://www.europeana.eu> ;
+	dcterms:modified "2011-05-31"^^xsd:date ;
+	dcterms:publisher :Bernhard ;
+	dcterms:publisher :Antoine ;
+	void:exampleResource <http://data.europeana.eu/item/92037/25F9104787668C4B5148BE8E5AB8DBEF5BE5FE03> ;
+	void:triples 185491353;
+	.
+	
+:Bernhard a foaf:Person ;
+	rdfs:label "Bernhard Haslhofer" ;
+	foaf:mbox <mailto:bernhard.haslhofer@cornell.edu> ;
+	.
+	
+:Antoine a foaf:Person ;
+	rdfs:label "Antoine Isaac" ;
+	foaf:mbox "aisaac@few.vu.nl" ;
+	.
+	

@@ -31,7 +31,9 @@ public class EuropeanaLODServlet extends HttpServlet {
 	protected String sparqlEndpoint = "http://data.mminf.univie.ac.at/sparql";
 	
 	protected String resourcePrefix = "http://data.europeana.eu";
-
+	
+	protected String voidFile = "/void.ttl";
+	
 	@Override
 	public void init() throws ServletException {
 
@@ -51,7 +53,12 @@ public class EuropeanaLODServlet extends HttpServlet {
 					"resourcePrefix");
 		}
 
-	
+		if (getServletConfig().getInitParameter("voidFile") != null) {
+			voidFile = getServletConfig().getInitParameter(
+					"voidFile");
+		}
+		
+		
 	}
 
 	@Override
@@ -110,19 +117,22 @@ public class EuropeanaLODServlet extends HttpServlet {
 	private void handleDataRequest(EuropeanaRequest request,
 			EuropeanaResponse response) throws ServletException, IOException {
 
+		// determine response content type from accept header
+		MimeTypePattern prefMimeType = request.getPreferredAcceptMimeType();
+		
+		ContentType contentType = AcceptHeaderHandler.getContentType(prefMimeType);
 		
 		if (request.isRootRequest()) {
-			// TODO: deliver void description
-			response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
-			response.setContentType("text/plain");
-			response.getOutputStream().print(
-					"Data requests on root URI are not supported yet.");
+			// TODO: currently only TTL is supported
+			if (! contentType.equals(ContentType.TTL)) {
+				response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE,
+						"Mime-type " + request.getHeader("Accept") + " currently not supported. Ask for Turtle serialization");
+				return;
+			}
+			// redirect to void description
+			String voidURI = request.getLocalURI(voidFile);
+			response.sendRedirectTo(voidURI, ContentType.TTL);
 		} else {
-			
-			// determine response content type from accept header
-			MimeTypePattern prefMimeType = request.getPreferredAcceptMimeType();
-			
-			ContentType contentType = AcceptHeaderHandler.getContentType(prefMimeType);
 
 			// deliver data in some RDF serialization
 			if (request.isInformationResourceRequest()) {
@@ -135,7 +145,6 @@ public class EuropeanaLODServlet extends HttpServlet {
 				// redirect to the information resource
 				String targetURI = request.getDataInformationResource();
 				response.sendRedirectTo(targetURI, contentType);
-
 
 			}
 			

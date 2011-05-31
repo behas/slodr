@@ -260,5 +260,16 @@ public class EuropeanaRequest extends HttpServletRequestWrapper {
 		return this.baseURI + EuropeanaRequest.IR_PATH + getResourceType()
 				+ getEuropeanaID();
 	}
+	
+	
+	/**
+	 * Returns the URI for a given local static resource 
+	 */
+	public String getLocalURI(String staticResource) {
+		
+		return this.baseURI + staticResource; 
+	
+	}
+	
 
 }

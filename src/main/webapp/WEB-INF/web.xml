@@ -20,12 +20,25 @@
 			<param-name>resourcePrefix</param-name>
 			<param-value>http://data.europeana.eu</param-value>
 		</init-param>
-		<load-on-startup>1</load-on-startup>
+		<init-param>
+			<param-name>voidFile</param-name>
+			<param-value>/void.ttl</param-value>
+		</init-param>
 	</servlet>
 	 
 	<servlet-mapping>
     	<servlet-name>EuropeanaLODServlet</servlet-name>
     	<url-pattern>/*</url-pattern>
   	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>void.ttl</url-pattern>
+	</servlet-mapping>
+
+	<mime-mapping>
+		<extension>ttl</extension>
+		<mime-type>text/turtle</mime-type>
+	</mime-mapping>
 
 </web-app>

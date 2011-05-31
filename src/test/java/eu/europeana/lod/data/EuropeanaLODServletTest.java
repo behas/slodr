@@ -131,13 +131,11 @@ public class EuropeanaLODServletTest {
 
 		EuropeanaTestRequest request = new EuropeanaTestRequest();
 		request.setHTTPRequestURI("http://data.europeana.eu/");
-		request.setAccept("application/rdf+xml");
-
-		// TODO: change as soon as void is implemented
+		request.setAccept("text/turtle");
 
 		EuropeanaTestResponse expected_response = new EuropeanaTestResponse();
-		expected_response.setStatus(406);
-		expected_response.setContentType("text/plain");
+		expected_response.setStatus(303);
+		expected_response.setContentType(ContentType.TTL.toString());
 
 		EuropeanaTestResponse response = tester.getEuropeanaResponse(request);
 
