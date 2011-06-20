@@ -21,7 +21,8 @@
 	dcterms:publisher :Bernhard ;
 	dcterms:publisher :Antoine ;
 	void:exampleResource <http://data.europeana.eu/item/92037/25F9104787668C4B5148BE8E5AB8DBEF5BE5FE03> ;
-	void:triples 185491353;
+	void:triples 185491353 ;
+	void:dataDump <http://data.europeana.eu/download/1.0/europeana_lod_1.0.nt.bz2>;
 	.
 	
 :Bernhard a foaf:Person ;
