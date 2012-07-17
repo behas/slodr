@@ -1,4 +1,4 @@
-# A simple servlet for handling HTTP requests at the Europeana Linked Data Prototype
+# Europeana Linked Data Prototype - HTTP Request Handler
 
 ## Further Infos and Citation
 
